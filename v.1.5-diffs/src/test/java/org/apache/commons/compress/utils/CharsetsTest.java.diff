@@ -1,0 +1,11 @@
+--- apache-commons-compress-1.5-src/src/test/java/org/apache/commons/compress/utils/CharsetsTest.java	2013-03-14 01:43:27.000000000 -0700
++++ pd-apache-commons-compress/src/test/java/org/apache/commons/compress/utils/CharsetsTest.java	2024-05-23 17:23:05.000000000 -0700
+@@ -26,7 +26,7 @@
+ /**
+  * Sanity checks for {@link Charsets}.
+  * 
+- * @version $Id$
++ * @version $Id: CharsetsTest.java 1437506 2013-01-23 15:56:56Z ggregory $
+  */
+ public class CharsetsTest {
+ 

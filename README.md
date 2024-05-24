@@ -46,7 +46,7 @@ git clone git@github.com:/pepperdata/commons-compress.git -b commons-compress-1.
 Differences Between the PD-specific and Stock 1.5 Versions
 --------
 
-To view these, please browse the `./PD-mods-to-1.5` directory in the `master` branch.
+To view these, please browse the `./v.1.5-diffs` directory.
 
 License
 -------

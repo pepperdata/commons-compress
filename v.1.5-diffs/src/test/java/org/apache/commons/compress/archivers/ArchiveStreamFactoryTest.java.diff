@@ -1,0 +1,29 @@
+--- apache-commons-compress-1.5-src/src/test/java/org/apache/commons/compress/archivers/ArchiveStreamFactoryTest.java	2013-03-14 01:43:27.000000000 -0700
++++ pd-apache-commons-compress/src/test/java/org/apache/commons/compress/archivers/ArchiveStreamFactoryTest.java	2024-05-23 17:23:05.000000000 -0700
+@@ -52,7 +52,7 @@
+     public void aiffFilesAreNoTARs() throws Exception {
+         InputStream is = null;
+         try {
+-            is = new BufferedInputStream(new FileInputStream("src/test/resources/testAIFF.aif"));
++            is = new BufferedInputStream(new FileInputStream("target/test-classes/testAIFF.aif"));
+             new ArchiveStreamFactory().createArchiveInputStream(is);
+             fail("created an input stream for a non-archive");
+         } catch (ArchiveException ae) {
+@@ -68,7 +68,7 @@
+     public void testCOMPRESS209() throws Exception {
+         InputStream is = null;
+         try {
+-            is = new BufferedInputStream(new FileInputStream("src/test/resources/testCompress209.doc"));
++            is = new BufferedInputStream(new FileInputStream("target/test-classes/testCompress209.doc"));
+             new ArchiveStreamFactory().createArchiveInputStream(is);
+             fail("created an input stream for a non-archive");
+         } catch (ArchiveException ae) {
+@@ -89,7 +89,7 @@
+     public void skipsPK00Prefix() throws Exception {
+         InputStream is = null;
+         try {
+-            is = new BufferedInputStream(new FileInputStream("src/test/resources/COMPRESS-208.zip"));
++            is = new BufferedInputStream(new FileInputStream("target/test-classes/COMPRESS-208.zip"));
+             ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream(is);
+             assertTrue(ais instanceof ZipArchiveInputStream);
+         } finally {
