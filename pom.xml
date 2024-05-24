@@ -37,6 +37,16 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
   </description>
 
   <properties>
+    <!-- NOTE(ankan): Overrides to the commons-parent POM definitions, all stemming
+         from the fact that we are currently constrained to use maven v. 3.3.9, and
+         have yet to move to the "required" maven v. 3.6.3:
+    -->
+    <minimalMavenBuildVersion>3.3.9</minimalMavenBuildVersion>
+    <commons.build-helper.version>3.4.0</commons.build-helper.version>
+    <commons.compiler.version>3.12.1</commons.compiler.version>
+    <commons.japicmp.version>0.15.7</commons.japicmp.version>
+    <commons.buildnumber-plugin.version>3.0.0</commons.buildnumber-plugin.version>
+
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
 
@@ -158,7 +168,7 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
-	<dependency>
+	  <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
       <version>${mockito.version}</version>
@@ -285,6 +295,8 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
           <version>${commons.rat.version}</version>
           <configuration>
             <excludes>
+              <!-- NOTE(ankan): These are outside the project: -->
+              <exclude>v.1.5-diffs/**</exclude>
               <!-- files used during tests -->
               <exclude>src/test/resources/**</exclude>
               <exclude>.pmd</exclude>
@@ -401,7 +413,6 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <pax.exam.karaf.version>${karaf.version}</pax.exam.karaf.version>
             <commons-compress.version>${project.version}</commons-compress.version>
           </systemPropertyVariables>
         </configuration>
