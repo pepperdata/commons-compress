@@ -34,8 +34,8 @@ PD Current Status
 --------------------------
 
 The Commons Compress version chosen for the immediate future within our code base is the
-latest one as of this writing, 1.26.2.  While the default branch is the traditional `master`
-branch, all changes so far have been made to the commons-compress-1.26.2 branch.
+latest one as of this writing, 1.26.2.  While the `master` branch is the _default_
+branch, all changes so far have been made to the `commons-compress-1.26.2` branch.
 The latter is the branch you should use (and modify) going forward, _until_ we decide to
 move to another branch:
 
