@@ -1,0 +1,11 @@
+--- apache-commons-compress-1.5-src/src/main/java/org/apache/commons/compress/utils/CharsetNames.java	2013-03-14 01:43:27.000000000 -0700
++++ pd-apache-commons-compress/src/main/java/org/apache/commons/compress/utils/CharsetNames.java	2024-05-23 17:23:05.000000000 -0700
+@@ -50,7 +50,7 @@
+  * 
+  * @see <a href="http://download.oracle.com/javase/6/docs/api/java/nio/charset/Charset.html">Standard charsets</a>
+  * @since 1.4
+- * @version $Id$
++ * @version $Id: CharsetNames.java 1309246 2012-04-04 04:51:50Z bodewig $
+  */
+ public class CharsetNames {
+     /**
