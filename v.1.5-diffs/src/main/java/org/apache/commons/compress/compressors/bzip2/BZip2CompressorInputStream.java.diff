@@ -1,0 +1,198 @@
+--- apache-commons-compress-1.5-src/src/main/java/org/apache/commons/compress/compressors/bzip2/BZip2CompressorInputStream.java	2013-03-14 01:43:27.000000000 -0700
++++ pd-apache-commons-compress/src/main/java/org/apache/commons/compress/compressors/bzip2/BZip2CompressorInputStream.java	2024-05-23 17:23:05.000000000 -0700
+@@ -31,11 +31,15 @@
+ 
+ /**
+  * An input stream that decompresses from the BZip2 format to be read as any other stream.
+- * 
++ *
++ * Methods that specify throwing an {@link IOException} might also throw the more specialized
++ * {@link BZip2CompressorException}, to indicate errors that are specific to the BZip2
++ * compression package.
++ *
+  * @NotThreadSafe
+  */
+-public class BZip2CompressorInputStream extends CompressorInputStream implements
+-                                                                          BZip2Constants {
++public class BZip2CompressorInputStream extends CompressorInputStream
++        implements BZip2Constants {
+ 
+     /**
+      * Index of the last char in the block, so the block size == last + 1.
+@@ -99,9 +103,9 @@
+ 
+     /**
+      * Constructs a new BZip2CompressorInputStream which decompresses bytes
+-     * read from the specified stream. This doesn't suppprt decompressing
++     * read from the specified stream. This doesn't support decompressing
+      * concatenated .bz2 files.
+-     * 
++     *
+      * @throws IOException
+      *             if the stream content is malformed or an I/O error occurs.
+      * @throws NullPointerException
+@@ -154,7 +158,7 @@
+ 
+     /*
+      * (non-Javadoc)
+-     * 
++     *
+      * @see java.io.InputStream#read(byte[], int, int)
+      */
+     @Override
+@@ -252,14 +256,14 @@
+         int magic2 = this.in.read();
+ 
+         if (magic0 != 'B' || magic1 != 'Z' || magic2 != 'h') {
+-            throw new IOException(isFirstStream
++            throw new BZip2CompressorException(isFirstStream
+                     ? "Stream is not in the BZip2 format"
+                     : "Garbage after a valid BZip2 stream");
+         }
+ 
+         int blockSize = this.in.read();
+         if ((blockSize < '1') || (blockSize > '9')) {
+-            throw new IOException("BZip2 block size is invalid");
++            throw new BZip2CompressorException("BZip2 block size is invalid");
+         }
+ 
+         this.blockSize100k = blockSize - '0';
+@@ -309,7 +313,7 @@
+             magic5 != 0x59 // 'Y'
+             ) {
+             this.currentState = EOF;
+-            throw new IOException("bad block header");
++            throw new BZip2CompressorException("bad block header");
+         } else {
+             this.storedBlockCRC = bsGetInt();
+             this.blockRandomised = bsR(1) == 1;
+@@ -341,7 +345,7 @@
+                 | (this.storedCombinedCRC >>> 31);
+             this.computedCombinedCRC ^= this.storedBlockCRC;
+ 
+-            throw new IOException("BZip2 CRC error");
++            throw new BZip2CompressorException("BZip2 CRC error");
+         }
+ 
+         this.computedCombinedCRC = (this.computedCombinedCRC << 1)
+@@ -355,7 +359,7 @@
+         this.data = null;
+ 
+         if (this.storedCombinedCRC != this.computedCombinedCRC) {
+-            throw new IOException("BZip2 CRC error");
++            throw new BZip2CompressorException("BZip2 CRC error");
+         }
+ 
+         // Look for the next .bz2 stream if decompressing
+@@ -388,7 +392,7 @@
+                 int thech = inShadow.read();
+ 
+                 if (thech < 0) {
+-                    throw new IOException("unexpected end of stream");
++                    throw new BZip2CompressorException("unexpected end of stream");
+                 }
+ 
+                 bsBuffShadow = (bsBuffShadow << 8) | thech;
+@@ -410,7 +414,7 @@
+             int thech = this.in.read();
+ 
+             if (thech < 0) {
+-                throw new IOException("unexpected end of stream");
++                throw new BZip2CompressorException("unexpected end of stream");
+             }
+ 
+             bsBuffShadow = (bsBuffShadow << 8) | thech;
+@@ -658,7 +662,7 @@
+                             bsLiveShadow += 8;
+                             continue;
+                         } else {
+-                            throw new IOException("unexpected end of stream");
++                            throw new BZip2CompressorException("unexpected end of stream");
+                         }
+                     }
+                     int zvec = (bsBuffShadow >> (bsLiveShadow - zn))
+@@ -674,8 +678,7 @@
+                                 bsLiveShadow += 8;
+                                 continue;
+                             } else {
+-                                throw new IOException(
+-                                                      "unexpected end of stream");
++                                throw new BZip2CompressorException("unexpected end of stream");
+                             }
+                         }
+                         bsLiveShadow--;
+@@ -693,11 +696,11 @@
+                 }
+ 
+                 if (lastShadow >= limitLast) {
+-                    throw new IOException("block overrun");
++                    throw new BZip2CompressorException("block overrun");
+                 }
+             } else {
+                 if (++lastShadow >= limitLast) {
+-                    throw new IOException("block overrun");
++                    throw new BZip2CompressorException("block overrun");
+                 }
+ 
+                 final char tmp = yy[nextSym - 1];
+@@ -741,7 +744,7 @@
+                         bsLiveShadow += 8;
+                         continue;
+                     } else {
+-                        throw new IOException("unexpected end of stream");
++                        throw new BZip2CompressorException("unexpected end of stream");
+                     }
+                 }
+                 int zvec = (bsBuffShadow >> (bsLiveShadow - zn))
+@@ -757,7 +760,7 @@
+                             bsLiveShadow += 8;
+                             continue;
+                         } else {
+-                            throw new IOException("unexpected end of stream");
++                            throw new BZip2CompressorException("unexpected end of stream");
+                         }
+                     }
+                     bsLiveShadow--;
+@@ -792,7 +795,7 @@
+                     bsLiveShadow += 8;
+                     continue;
+                 } else {
+-                    throw new IOException("unexpected end of stream");
++                    throw new BZip2CompressorException("unexpected end of stream");
+                 }
+             }
+             bsLiveShadow--;
+@@ -826,7 +829,7 @@
+         }
+ 
+         if ((this.origPtr < 0) || (this.origPtr >= tt.length)) {
+-            throw new IOException("stream corrupted");
++            throw new BZip2CompressorException("stream corrupted");
+         }
+ 
+         this.su_tPos = tt[this.origPtr];
+@@ -998,7 +1001,7 @@
+ 
+         /**
+          * Initializes the {@link #tt} array.
+-         * 
++         *
+          * This method is called when the required length of the array is known.
+          * I don't initialize it at construction time to avoid unneccessary
+          * memory allocation when compressing small files.
+@@ -1021,13 +1024,13 @@
+ 
+     /**
+      * Checks if the signature matches what is expected for a bzip2 file.
+-     * 
++     *
+      * @param signature
+      *            the bytes to check
+      * @param length
+      *            the number of bytes to check
+      * @return true, if this stream is a bzip2 compressed stream, false otherwise
+-     * 
++     *
+      * @since 1.1
+      */
+     public static boolean matches(byte[] signature, int length) {
