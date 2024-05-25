@@ -18,6 +18,7 @@
 package org.apache.commons.compress.archivers.zip;
 
 import static org.apache.commons.compress.AbstractTest.getPath;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -27,15 +28,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder;
+import org.apache.commons.compress.AbstractTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("CommentedOutCode")
 public class ZipMemoryFileSystemTest {
 
     static void println(final String x) {
@@ -91,38 +93,38 @@ public class ZipMemoryFileSystemTest {
         }
     }
 
-//    @Test
-//    public void testPositionToSomeZipSplitSegmentInMemory() throws IOException {
-//        final byte[] firstBytes = AbstractTest.readAllBytes("COMPRESS-477/split_zip_created_by_zip/split_zip_created_by_zip.z01");
-//        final byte[] secondBytes = AbstractTest.readAllBytes("COMPRESS-477/split_zip_created_by_zip/split_zip_created_by_zip.z02");
-//        final byte[] lastBytes = AbstractTest.readAllBytes("COMPRESS-477/split_zip_created_by_zip/split_zip_created_by_zip.zip");
-//        final int firstFileSize = firstBytes.length;
-//        final int secondFileSize = secondBytes.length;
-//        final int lastFileSize = lastBytes.length;
-//
-//        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
-//            final Path lastMemoryPath = fileSystem.getPath("split_zip_created_by_zip.zip");
-//            Files.write(fileSystem.getPath("split_zip_created_by_zip.z01"), firstBytes);
-//            Files.write(fileSystem.getPath("split_zip_created_by_zip.z02"), secondBytes);
-//            Files.write(lastMemoryPath, lastBytes);
-//            final Random random = new Random();
-//            final int randomDiskNumber = random.nextInt(3);
-//            final int randomOffset = randomDiskNumber < 2 ? random.nextInt(firstFileSize) : random.nextInt(lastFileSize);
-//
-//            try (ZipSplitReadOnlySeekableByteChannel channel = (ZipSplitReadOnlySeekableByteChannel) ZipSplitReadOnlySeekableByteChannel
-//                    .buildFromLastSplitSegment(lastMemoryPath)) {
-//                channel.position(randomDiskNumber, randomOffset);
-//                long expectedPosition = randomOffset;
-//
-//                expectedPosition += randomDiskNumber > 0 ? firstFileSize : 0;
-//                expectedPosition += randomDiskNumber > 1 ? secondFileSize : 0;
-//
-//                assertEquals(expectedPosition, channel.position());
-//            }
-//        }
-//
-//    }
-//
+    @Test
+    public void testPositionToSomeZipSplitSegmentInMemory() throws IOException {
+        final byte[] firstBytes = AbstractTest.readAllBytes("COMPRESS-477/split_zip_created_by_zip/split_zip_created_by_zip.z01");
+        final byte[] secondBytes = AbstractTest.readAllBytes("COMPRESS-477/split_zip_created_by_zip/split_zip_created_by_zip.z02");
+        final byte[] lastBytes = AbstractTest.readAllBytes("COMPRESS-477/split_zip_created_by_zip/split_zip_created_by_zip.zip");
+        final int firstFileSize = firstBytes.length;
+        final int secondFileSize = secondBytes.length;
+        final int lastFileSize = lastBytes.length;
+
+        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
+            final Path lastMemoryPath = fileSystem.getPath("split_zip_created_by_zip.zip");
+            Files.write(fileSystem.getPath("split_zip_created_by_zip.z01"), firstBytes);
+            Files.write(fileSystem.getPath("split_zip_created_by_zip.z02"), secondBytes);
+            Files.write(lastMemoryPath, lastBytes);
+            final Random random = new Random();
+            final int randomDiskNumber = random.nextInt(3);
+            final int randomOffset = randomDiskNumber < 2 ? random.nextInt(firstFileSize) : random.nextInt(lastFileSize);
+
+            try (ZipSplitReadOnlySeekableByteChannel channel = (ZipSplitReadOnlySeekableByteChannel) ZipSplitReadOnlySeekableByteChannel
+                    .buildFromLastSplitSegment(lastMemoryPath)) {
+                channel.position(randomDiskNumber, randomOffset);
+                long expectedPosition = randomOffset;
+
+                expectedPosition += randomDiskNumber > 0 ? firstFileSize : 0;
+                expectedPosition += randomDiskNumber > 1 ? secondFileSize : 0;
+
+                assertEquals(expectedPosition, channel.position());
+            }
+        }
+
+    }
+
 //    @Test
 //    public void testScatterFileInMemory() throws IOException {
 //        final byte[] B_PAYLOAD = "RBBBBBBS".getBytes();
