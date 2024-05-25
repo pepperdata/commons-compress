@@ -33,10 +33,14 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
@@ -515,37 +519,37 @@ public class ZipMemoryFileSystemTest {
 //            }
 //        }
 //    }
-//
-//    @Test
-//    public void testZipToMemoryFileSystemSplitPath()
-//        throws IOException, NoSuchAlgorithmException {
-//        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
-//            final Path zipInMemSys = fileSystem.getPath("target.zip");
-//            final byte[] bytes = new byte[100 * 1024];
-//            SecureRandom.getInstanceStrong().nextBytes(bytes);
-//
-//            try (ZipArchiveOutputStream zipOut =
-//                     new ZipArchiveOutputStream(zipInMemSys, 64 * 1024L)) {
-//                final ZipArchiveEntry entry = new ZipArchiveEntry("test.txt");
-//                entry.setSize(bytes.length);
-//                zipOut.putArchiveEntry(entry);
-//
-//                zipOut.write(bytes);
-//
-//                zipOut.closeArchiveEntry();
-//                zipOut.finish();
-//
-//                List<Path> splitZips;
-//                try (Stream<Path> paths = Files.walk(fileSystem.getPath("."), 1)) {
-//                    splitZips = paths.filter(Files::isRegularFile).peek(
-//                        path -> println("Found: " + path.toAbsolutePath()))
-//                        .collect(Collectors.toList());
-//                }
-//                assertEquals(splitZips.size(), 2);
-//                assertEquals(Files.size(splitZips.get(0))
-//                    + Files.size(splitZips.get(1)) - 4, zipOut.getBytesWritten());
-//            }
-//        }
-//    }
+
+    @Test
+    public void testZipToMemoryFileSystemSplitPath()
+        throws IOException, NoSuchAlgorithmException {
+        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
+            final Path zipInMemSys = fileSystem.getPath("target.zip");
+            final byte[] bytes = new byte[100 * 1024];
+            SecureRandom.getInstanceStrong().nextBytes(bytes);
+
+            try (ZipArchiveOutputStream zipOut =
+                     new ZipArchiveOutputStream(zipInMemSys, 64 * 1024L)) {
+                final ZipArchiveEntry entry = new ZipArchiveEntry("test.txt");
+                entry.setSize(bytes.length);
+                zipOut.putArchiveEntry(entry);
+
+                zipOut.write(bytes);
+
+                zipOut.closeArchiveEntry();
+                zipOut.finish();
+
+                List<Path> splitZips;
+                try (Stream<Path> paths = Files.walk(fileSystem.getPath("."), 1)) {
+                    splitZips = paths.filter(Files::isRegularFile).peek(
+                        path -> println("Found: " + path.toAbsolutePath()))
+                        .collect(Collectors.toList());
+                }
+                assertEquals(splitZips.size(), 2);
+                assertEquals(Files.size(splitZips.get(0))
+                    + Files.size(splitZips.get(1)) - 4, zipOut.getBytesWritten());
+            }
+        }
+    }
 
 }
