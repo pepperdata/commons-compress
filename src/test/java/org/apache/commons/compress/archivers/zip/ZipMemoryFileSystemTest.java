@@ -93,7 +93,7 @@ public class ZipMemoryFileSystemTest {
 
     private static boolean isExpectedHost() {
         // NOTE(ankan): Will be false for anything other than build14 in our Linux
-        // build hosts, or our Mac developer machines (which should show "unknown"):
+        // build hosts, or our Mac developer machines (which should show "probably a mac"):
         return BUILD14_HOSTNAME.equals(hostname) || MACOS_HOSTNAME.equals(hostname);
     }
 
