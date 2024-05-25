@@ -130,7 +130,8 @@ import org.apache.commons.compress.compressors.CompressorOutputStream;
  *
  * @NotThreadSafe
  */
-public class BZip2CompressorOutputStream extends CompressorOutputStream implements BZip2Constants {
+public class BZip2CompressorOutputStream
+    extends CompressorOutputStream implements BZip2Constants {
 
     static final class Data {
 
