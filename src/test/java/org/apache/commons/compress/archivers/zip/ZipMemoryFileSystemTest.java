@@ -54,9 +54,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+// TODO(ankan): There are a few tests here that cause the execution to hang on most
+//  of our build machines, BUT PASS on build14 (and of course, on MacOS)!  Need to figure
+//  out why.  In the meantime, they are commented out since PD code does not use the
+//  Zip module at all.
 @SuppressWarnings("CommentedOutCode")
 public class ZipMemoryFileSystemTest {
 
+    @SuppressWarnings("unused")
     static void println(final String x) {
 //         System.out.println(x);
     }
