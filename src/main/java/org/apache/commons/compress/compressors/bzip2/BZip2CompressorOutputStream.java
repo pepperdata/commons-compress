@@ -197,14 +197,15 @@ public class BZip2CompressorOutputStream
     /**
      * The minimum supported blocksize {@code  == 1}.
      */
+    @SuppressWarnings("unused")
     public static final int MIN_BLOCKSIZE = 1;
 
     /**
      * The maximum supported blocksize {@code  == 9}.
      */
     public static final int MAX_BLOCKSIZE = 9;
-    private static final int GREATER_ICOST = 15;
 
+    private static final int GREATER_ICOST = 15;
     private static final int LESSER_ICOST = 0;
 
     /**
@@ -217,6 +218,7 @@ public class BZip2CompressorOutputStream
      * @param inputLength The length of the data which will be compressed by
      *                    {@code BZip2CompressorOutputStream}.
      */
+    @SuppressWarnings("unused")
     public static int chooseBlockSize(final long inputLength) {
         return inputLength > 0 ? (int) Math.min(inputLength / 132000 + 1, 9) : MAX_BLOCKSIZE;
     }
@@ -276,6 +278,7 @@ public class BZip2CompressorOutputStream
                 heap[1] = heap[nHeap];
                 nHeap--;
 
+                //noinspection UnusedAssignment
                 int yy = 0;
                 int zz = 1;
                 int tmp = heap[1];
@@ -305,6 +308,7 @@ public class BZip2CompressorOutputStream
                 heap[1] = heap[nHeap];
                 nHeap--;
 
+                //noinspection UnusedAssignment
                 yy = 0;
                 zz = 1;
                 tmp = heap[1];
@@ -341,6 +345,7 @@ public class BZip2CompressorOutputStream
                 nHeap++;
                 heap[nHeap] = nNodes;
 
+                //noinspection UnusedAssignment
                 tmp = 0;
                 zz = nHeap;
                 tmp = heap[zz];
@@ -496,6 +501,7 @@ public class BZip2CompressorOutputStream
     @Override
     public void close() throws IOException {
         if (!closed) {
+            //noinspection unused
             try (OutputStream outShadow = this.out) {
                 finish();
             }
