@@ -37,6 +37,10 @@ import org.apache.commons.io.input.CloseShieldInputStream;
 /**
  * An input stream that decompresses from the BZip2 format to be read as any other stream.
  *
+ * Methods that specify throwing an {@link IOException} might also throw the more specialized
+ * {@link BZip2CompressorException}, to indicate errors that are specific to the BZip2
+ * compression package.
+ *
  * @NotThreadSafe
  */
 public class BZip2CompressorInputStream extends CompressorInputStream
@@ -140,7 +144,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
     private static int bsR(final BitInputStream bin, final int n) throws IOException {
         final long thech = bin.readBits(n);
         if (thech < 0) {
-            throw new IOException("Unexpected end of stream");
+            throw new BZip2CompressorException("Unexpected end of stream");
         }
         return (int) thech;
     }
@@ -148,10 +152,10 @@ public class BZip2CompressorInputStream extends CompressorInputStream
     private static void checkBounds(final int checkVal, final int limitExclusive,
                                     final String name) throws IOException {
         if (checkVal < 0) {
-            throw new IOException("Corrupted input, " + name + " value negative");
+            throw new BZip2CompressorException("Corrupted input, " + name + " value negative");
         }
         if (checkVal >= limitExclusive) {
-            throw new IOException("Corrupted input, " + name + " value too big");
+            throw new BZip2CompressorException("Corrupted input, " + name + " value too big");
         }
     }
 
@@ -313,7 +317,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
         this.data = null;
 
         if (this.storedCombinedCRC != this.computedCombinedCRC) {
-            throw new IOException("BZip2 CRC error");
+            throw new BZip2CompressorException("BZip2 CRC error");
         }
 
         // Look for the next .bz2 stream if decompressing
@@ -361,7 +365,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
             this.computedCombinedCRC = this.storedCombinedCRC << 1 | this.storedCombinedCRC >>> 31;
             this.computedCombinedCRC ^= this.storedBlockCRC;
 
-            throw new IOException("BZip2 CRC error");
+            throw new BZip2CompressorException("BZip2 CRC error");
         }
 
         this.computedCombinedCRC = this.computedCombinedCRC << 1 | this.computedCombinedCRC >>> 31;
@@ -457,13 +461,13 @@ public class BZip2CompressorInputStream extends CompressorInputStream
                 Arrays.fill(ll8, from, lastShadow + 1, ch);
 
                 if (lastShadow >= limitLast) {
-                    throw new IOException("Block overrun while expanding RLE in MTF, "
+                    throw new BZip2CompressorException("Block overrun while expanding RLE in MTF, "
                         + lastShadow + " exceeds " + limitLast);
                 }
             } else {
                 if (++lastShadow >= limitLast) {
-                    throw new IOException("Block overrun in MTF, " + lastShadow + " exceeds "
-                        + limitLast);
+                    throw new BZip2CompressorException("Block overrun in MTF, " + lastShadow
+                        + " exceeds " + limitLast);
                 }
                 checkBounds(nextSym, 256 + 1, "nextSym");
 
@@ -481,6 +485,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
                         yy[j] = yy[--j];
                     }
                 } else {
+                    //noinspection SuspiciousSystemArraycopy
                     System.arraycopy(yy, 0, yy, 1, nextSym - 1);
                 }
 
@@ -558,13 +563,14 @@ public class BZip2CompressorInputStream extends CompressorInputStream
         final int magic2 = readNextByte(this.bin);
 
         if (magic0 != 'B' || magic1 != 'Z' || magic2 != 'h') {
-            throw new IOException(isFirstStream ? "Stream is not in the BZip2 format"
+            throw new BZip2CompressorException(isFirstStream
+                ? "Stream is not in the BZip2 format"
                 : "Garbage after a valid BZip2 stream");
         }
 
         final int blockSize = readNextByte(this.bin);
         if (blockSize < '1' || blockSize > '9') {
-            throw new IOException("BZip2 block size is invalid");
+            throw new BZip2CompressorException("BZip2 block size is invalid");
         }
 
         this.blockSize100k = blockSize - '0';
@@ -614,7 +620,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
                 magic5 != 0x59 // 'Y'
         ) {
             this.currentState = EOF;
-            throw new IOException("Bad block header");
+            throw new BZip2CompressorException("Bad block header");
         }
         this.storedBlockCRC = bsGetInt(bin);
         this.blockRandomised = bsR(bin, 1) == 1;
@@ -694,6 +700,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
         return destOffs == offs ? -1 : destOffs - offs;
     }
 
+    @SuppressWarnings("DuplicateBranchesInSwitch")
     private int read0() throws IOException {
         switch (currentState) {
         case EOF:
@@ -765,7 +772,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
         final int nGroups = bsR(bin, 3);
         final int selectors = bsR(bin, 15);
         if (selectors < 0) {
-            throw new IOException("Corrupted input, nSelectors value negative");
+            throw new BZip2CompressorException("Corrupted input, nSelectors value negative");
         }
         checkBounds(alphaSize, MAX_ALPHA_SIZE + 1, "alphaSize");
         checkBounds(nGroups, N_GROUPS + 1, "nGroups");
@@ -845,7 +852,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream
         }
 
         if (this.origPtr < 0 || this.origPtr >= tt.length) {
-            throw new IOException("Stream corrupted");
+            throw new BZip2CompressorException("Stream corrupted");
         }
 
         this.su_tPos = tt[this.origPtr];
