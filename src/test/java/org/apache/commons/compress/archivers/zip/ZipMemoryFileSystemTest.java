@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 //import java.util.EnumSet;
 //import java.util.List;
+import java.util.EnumSet;
 import java.util.Random;
 import java.util.UUID;
 //import java.util.stream.Collectors;
@@ -410,30 +411,30 @@ public class ZipMemoryFileSystemTest {
 //        }
 //    }
 
-//    @Test
-//    public void testZipFromMemoryFileSystemSeekableByteChannel() throws IOException, NoSuchAlgorithmException {
-//        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
-//            final Path textFileInMemSys = fileSystem.getPath("test.txt");
-//            final byte[] bytes = new byte[100 * 1024];
-//            SecureRandom.getInstanceStrong().nextBytes(bytes);
-//            Files.write(textFileInMemSys, bytes);
-//
-//            final Path zipInLocalSys = Files.createTempFile(dir, "commons-compress-memoryfs", ".zip");
-//            try (SeekableByteChannel byteChannel = Files.newByteChannel(zipInLocalSys,
-//                    EnumSet.of(StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
-//                    ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(byteChannel)) {
-//                final ZipArchiveEntry entry = new ZipArchiveEntry(textFileInMemSys, textFileInMemSys.getFileName().toString());
-//                entry.setSize(Files.size(textFileInMemSys));
-//                zipOut.putArchiveEntry(entry);
-//
-//                Files.copy(textFileInMemSys, zipOut);
-//                zipOut.closeArchiveEntry();
-//                zipOut.finish();
-//                assertEquals(Files.size(zipInLocalSys), zipOut.getBytesWritten());
-//            }
-//        }
-//    }
-//
+    @Test
+    public void testZipFromMemoryFileSystemSeekableByteChannel() throws IOException, NoSuchAlgorithmException {
+        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
+            final Path textFileInMemSys = fileSystem.getPath("test.txt");
+            final byte[] bytes = new byte[100 * 1024];
+            SecureRandom.getInstanceStrong().nextBytes(bytes);
+            Files.write(textFileInMemSys, bytes);
+
+            final Path zipInLocalSys = Files.createTempFile(dir, "commons-compress-memoryfs", ".zip");
+            try (SeekableByteChannel byteChannel = Files.newByteChannel(zipInLocalSys,
+                    EnumSet.of(StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING));
+                 ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(byteChannel)) {
+                final ZipArchiveEntry entry = new ZipArchiveEntry(textFileInMemSys, textFileInMemSys.getFileName().toString());
+                entry.setSize(Files.size(textFileInMemSys));
+                zipOut.putArchiveEntry(entry);
+
+                Files.copy(textFileInMemSys, zipOut);
+                zipOut.closeArchiveEntry();
+                zipOut.finish();
+                assertEquals(Files.size(zipInLocalSys), zipOut.getBytesWritten());
+            }
+        }
+    }
+
 //    @Test
 //    public void testZipFromMemoryFileSystemSplitFile() throws IOException, NoSuchAlgorithmException {
 //        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
