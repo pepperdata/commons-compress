@@ -45,10 +45,11 @@ git clone git@github.com:/pepperdata/commons-compress.git -b commons-compress-1.
 - This project _requires_ at least Maven 3.6.3 to build, so please make provisions for that.
 I have tested the build with Maven 3.6.3.
 - There are a couple of unit tests that simply hang on most of our Linux build machines, but
-work and pass on `build14`!  Since these tests are for modules our code _does not use at all_,
+**work and pass** on `build14`!  Since these tests are for modules our code _does not use at all_,
 and since this happens on the _original_ Commons Compress 1.26.2 code (i.e., without PD mods),
-this is not a major concern, but should be investigated in the future.  In the meantime, Linux
-builds can be executed on `build14` (or you can comment out the offending tests).
+this is not a major concern, but should be investigated in the future.  In the meantime,
+fully passing Linux builds can be executed on `build14` (on our other Linux build machines,
+these tests are automatically skipped).
 
 ## Differences Between the PD-specific and Stock 1.5 Versions
 
