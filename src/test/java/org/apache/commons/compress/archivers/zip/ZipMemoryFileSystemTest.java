@@ -471,33 +471,36 @@ public class ZipMemoryFileSystemTest {
         }
     }
 
-//    @Test
-//    public void testZipToMemoryFileSystemPath() throws IOException {
-//        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
-//            final Path zipInMemSys = fileSystem.getPath("target.zip");
-//
-//            try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(zipInMemSys)) {
-//                final String content = "Test";
-//                final ZipArchiveEntry entry = new ZipArchiveEntry("test.txt");
-//                entry.setSize(content.length());
-//                zipOut.putArchiveEntry(entry);
-//
-//                zipOut.write("Test".getBytes(UTF_8));
-//                zipOut.closeArchiveEntry();
-//
-//                assertTrue(Files.exists(zipInMemSys));
-//                assertEquals(Files.size(zipInMemSys), zipOut.getBytesWritten());
-//            }
-//        }
-//    }
-//
+    @Test
+    public void testZipToMemoryFileSystemPath() throws IOException {
+        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
+            final Path zipInMemSys = fileSystem.getPath("target.zip");
+
+            try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(zipInMemSys)) {
+                final String content = "Test";
+                final ZipArchiveEntry entry = new ZipArchiveEntry("test.txt");
+                entry.setSize(content.length());
+                zipOut.putArchiveEntry(entry);
+
+                zipOut.write("Test".getBytes(UTF_8));
+                zipOut.closeArchiveEntry();
+
+                assertTrue(Files.exists(zipInMemSys));
+                assertEquals(Files.size(zipInMemSys), zipOut.getBytesWritten());
+            }
+        }
+    }
+
 //    @Test
 //    public void testZipToMemoryFileSystemSeekableByteChannel() throws IOException {
 //        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
 //            final Path zipInMemSys = fileSystem.getPath("target.zip");
 //
 //            try (SeekableByteChannel byteChannel = Files.newByteChannel(zipInMemSys,
-//                    EnumSet.of(StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE_NEW));
+//                    EnumSet.of(StandardOpenOption.READ,
+//                        StandardOpenOption.WRITE,
+//                        StandardOpenOption.TRUNCATE_EXISTING,
+//                        StandardOpenOption.CREATE_NEW));
 //                 ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(byteChannel)) {
 //                final String content = "Test";
 //                final ZipArchiveEntry entry = new ZipArchiveEntry("test.txt");
@@ -514,13 +517,15 @@ public class ZipMemoryFileSystemTest {
 //    }
 //
 //    @Test
-//    public void testZipToMemoryFileSystemSplitPath() throws IOException, NoSuchAlgorithmException {
+//    public void testZipToMemoryFileSystemSplitPath()
+//        throws IOException, NoSuchAlgorithmException {
 //        try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build()) {
 //            final Path zipInMemSys = fileSystem.getPath("target.zip");
 //            final byte[] bytes = new byte[100 * 1024];
 //            SecureRandom.getInstanceStrong().nextBytes(bytes);
 //
-//            try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(zipInMemSys, 64 * 1024L)) {
+//            try (ZipArchiveOutputStream zipOut =
+//                     new ZipArchiveOutputStream(zipInMemSys, 64 * 1024L)) {
 //                final ZipArchiveEntry entry = new ZipArchiveEntry("test.txt");
 //                entry.setSize(bytes.length);
 //                zipOut.putArchiveEntry(entry);
@@ -532,10 +537,13 @@ public class ZipMemoryFileSystemTest {
 //
 //                List<Path> splitZips;
 //                try (Stream<Path> paths = Files.walk(fileSystem.getPath("."), 1)) {
-//                    splitZips = paths.filter(Files::isRegularFile).peek(path -> println("Found: " + path.toAbsolutePath())).collect(Collectors.toList());
+//                    splitZips = paths.filter(Files::isRegularFile).peek(
+//                        path -> println("Found: " + path.toAbsolutePath()))
+//                        .collect(Collectors.toList());
 //                }
 //                assertEquals(splitZips.size(), 2);
-//                assertEquals(Files.size(splitZips.get(0)) + Files.size(splitZips.get(1)) - 4, zipOut.getBytesWritten());
+//                assertEquals(Files.size(splitZips.get(0))
+//                    + Files.size(splitZips.get(1)) - 4, zipOut.getBytesWritten());
 //            }
 //        }
 //    }
