@@ -117,7 +117,10 @@ public final class BZip2Test extends AbstractTest {
 
     @SuppressWarnings("SimplifiableAssertion")
     private void assert_bzip2_file_equals(File bz2file, byte[] data) throws IOException {
-        // Deliberately do this with bzip2 command line, to better test for customers.
+        // NOTE(ssuchter): Deliberately do this with bzip2 command line,
+        // to better test for customers.
+        // NOTE(ankan): Our native3 library contains bzip2, so a bzip2 should be always
+        // available (usually at /opt/pepperdata/native3/bin/bzip2).
         Runtime rt = Runtime.getRuntime();
         String command = "bzip2 -cd " + bz2file.getAbsolutePath();
         Process p = rt.exec(command);
