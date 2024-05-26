@@ -36,7 +36,8 @@ public final class BZip2Test extends AbstractTest {
         final File input = getFile("bla.txt.bz2");
         final File output = newTempFile("bla.txt");
         try (InputStream is = Files.newInputStream(input.toPath());
-                CompressorInputStream in = new CompressorStreamFactory().createCompressorInputStream("bzip2", is)) {
+                CompressorInputStream in =
+                    new CompressorStreamFactory().createCompressorInputStream("bzip2", is)) {
             Files.copy(in, output.toPath());
         }
     }
@@ -48,7 +49,8 @@ public final class BZip2Test extends AbstractTest {
         {
             output = newTempFile("test.txt.bz2");
             try (OutputStream out = Files.newOutputStream(output.toPath());
-                    CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream("bzip2", out)) {
+                    CompressorOutputStream cos =
+                        new CompressorStreamFactory().createCompressorOutputStream("bzip2", out)) {
                 Files.copy(input.toPath(), cos);
             }
         }
@@ -56,7 +58,8 @@ public final class BZip2Test extends AbstractTest {
         final File decompressed = newTempFile("decompressed.txt");
         {
             try (InputStream is = Files.newInputStream(output.toPath());
-                    CompressorInputStream in = new CompressorStreamFactory().createCompressorInputStream("bzip2", is)) {
+                    CompressorInputStream in =
+                        new CompressorStreamFactory().createCompressorInputStream("bzip2", is)) {
                 Files.copy(in, decompressed.toPath());
             }
         }
@@ -82,7 +85,8 @@ public final class BZip2Test extends AbstractTest {
     public void testConcatenatedStreamsReadFirstOnly() throws Exception {
         final File input = getFile("multiple.bz2");
         try (InputStream is = Files.newInputStream(input.toPath())) {
-            try (CompressorInputStream in = new CompressorStreamFactory().createCompressorInputStream("bzip2", is)) {
+            try (CompressorInputStream in =
+                     new CompressorStreamFactory().createCompressorInputStream("bzip2", is)) {
                 assertEquals('a', in.read());
                 assertEquals(-1, in.read());
             }

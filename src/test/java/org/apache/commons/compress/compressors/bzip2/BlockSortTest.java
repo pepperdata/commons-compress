@@ -74,7 +74,7 @@ public class BlockSortTest {
      */
 
     private static final byte[] FIXTURE = {  0, 1, (byte) 252, (byte) 253, (byte) 255,
-                                             (byte) 254,3, 2, (byte) 128 };
+                                             (byte) 254, 3, 2, (byte) 128 };
 
     private static final byte[] FIXTURE_BWT = { (byte) 128, 0, 3, (byte) 254, 2, 1,
                                                 (byte) 252, (byte) 255, (byte) 253 };
