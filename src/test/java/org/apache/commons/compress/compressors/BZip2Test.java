@@ -72,11 +72,11 @@ public final class BZip2Test extends AbstractTest {
         final File input = getFile("COMPRESS-131.bz2");
         try (InputStream is = Files.newInputStream(input.toPath())) {
             try (CompressorInputStream in = new BZip2CompressorInputStream(is, true)) {
-                int idx = 0;
+                int loc = 0;
                 while (in.read() != -1) {
-                    idx++;
+                    loc++;
                 }
-                assertEquals(539, idx);
+                assertEquals(539, loc);
             }
         }
     }
