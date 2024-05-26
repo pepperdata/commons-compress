@@ -540,10 +540,6 @@ public class BZip2CompressorOutputStream extends CompressorOutputStream implemen
         if (!closed) {
             //noinspection unused
             try (OutputStream outShadow = this.out) {
-                // The above is a "try-with-resources" statement, and since OutputStream
-                // implements Closeable (and hence, AutoCloseable), outShadow.close() will
-                // be called automatically when exiting this block.  Hence, no explicit
-                // call to outShadow.close() is needed.
                 finish();
             }
         }
@@ -596,9 +592,9 @@ public class BZip2CompressorOutputStream extends CompressorOutputStream implemen
     private void endCompression() throws IOException {
         /*
          * Now another magic 48-bit number, 0x177245385090, to indicate the
-         * end of the last block. (sqrt(pi), if you want to know). I did want
+         * end of the last block. (sqrt(pi), if you want to know. I did want
          * to use e, but it contains too much repetition -- 27 18 28 18 28 46
-         * -- for me to feel statistically comfortable. Call me paranoid.
+         * -- for me to feel statistically comfortable. Call me paranoid.)
          *
          * NOTE(ssuchter): If we're operating on a FileChannel (e.g. seek-able),
          * then this routine always seeks back to before where we were.
