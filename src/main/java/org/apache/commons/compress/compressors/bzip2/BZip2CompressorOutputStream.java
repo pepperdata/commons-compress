@@ -20,6 +20,7 @@ package org.apache.commons.compress.compressors.bzip2;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
 import org.apache.commons.compress.compressors.CompressorOutputStream;
@@ -130,8 +131,8 @@ import org.apache.commons.compress.compressors.CompressorOutputStream;
  *
  * @NotThreadSafe
  */
-public class BZip2CompressorOutputStream
-    extends CompressorOutputStream implements BZip2Constants {
+@SuppressWarnings("CommentedOutCode")
+public class BZip2CompressorOutputStream extends CompressorOutputStream implements BZip2Constants {
 
     static final class Data {
 
@@ -197,15 +198,14 @@ public class BZip2CompressorOutputStream
     /**
      * The minimum supported blocksize {@code  == 1}.
      */
-    @SuppressWarnings("unused")
     public static final int MIN_BLOCKSIZE = 1;
 
     /**
      * The maximum supported blocksize {@code  == 9}.
      */
     public static final int MAX_BLOCKSIZE = 9;
-
     private static final int GREATER_ICOST = 15;
+
     private static final int LESSER_ICOST = 0;
 
     /**
@@ -338,8 +338,8 @@ public class BZip2CompressorOutputStream
 
                 final int weight_n1 = weight[n1];
                 final int weight_n2 = weight[n2];
-                weight[nNodes] = (weight_n1 & 0xffffff00) + (weight_n2 & 0xffffff00) | 1
-                    + Math.max(weight_n1 & 0x000000ff, weight_n2 & 0x000000ff);
+                weight[nNodes] = (weight_n1 & 0xffffff00) + (weight_n2 & 0xffffff00)
+                    | 1 + Math.max(weight_n1 & 0x000000ff, weight_n2 & 0x000000ff);
 
                 parent[nNodes] = -1;
                 nHeap++;
@@ -403,9 +403,28 @@ public class BZip2CompressorOutputStream
     private int currentChar = -1;
     private int runLength;
 
+    private int blockCRC;
     private int combinedCRC;
 
     private final int allowableBlockSize;
+
+    private boolean inBlock;
+    private boolean printedHeader = false;
+
+    public void printInternalState(String prefix) {
+        if (!printedHeader) {
+            System.out.printf(
+                "%15s%5s%9s%9s%4s%7s%5s%4s%4s%9s%9s%3s%n",
+                "", "last", "bsBuff", "bsLive", "crc", "nInUse", "nMTF",
+                "cc", "rl", "blockCRC", "combCRC", "iB");
+            printedHeader = true;
+        }
+        System.out.printf("%-15s%5d %08x %08x ???%7d%5d%4d%4d %08x %08x%3d%n",
+            prefix,
+            last, bsBuff, bsLive, nInUse, nMTF, currentChar, runLength, blockCRC, combinedCRC,
+            inBlock ? 1 : 0);
+    }
+
     /**
      * All memory intensive stuff.
      */
@@ -414,6 +433,7 @@ public class BZip2CompressorOutputStream
     private BlockSort blockSorter;
 
     private OutputStream out;
+    private FileChannel outChannel;
 
     private volatile boolean closed;
 
@@ -427,6 +447,23 @@ public class BZip2CompressorOutputStream
      */
     public BZip2CompressorOutputStream(final OutputStream out) throws IOException {
         this(out, MAX_BLOCKSIZE);
+    }
+
+    /**
+     * Constructs a new {@code Bzip2CompressorOutputStream} with a {@code FileChannel}.
+     *
+     * Using a {@code FileChannel} means that the flush() operation will work slightly better.
+     * In particular, it will continually rewrite a footer so that the file is always a valid
+     * bzip2 file.
+     *
+     * @param outChannel            the destination channel.
+     * @throws IOException          if an I/O error occurs in the specified channel.
+     * @throws NullPointerException if {@code outChannel == null}.
+     */
+    public BZip2CompressorOutputStream(final FileChannel outChannel)
+            throws IOException {
+        this(java.nio.channels.Channels.newOutputStream(outChannel), MIN_BLOCKSIZE);
+        this.outChannel = outChannel;
     }
 
     /**
@@ -503,15 +540,23 @@ public class BZip2CompressorOutputStream
         if (!closed) {
             //noinspection unused
             try (OutputStream outShadow = this.out) {
+                // The above is a "try-with-resources" statement, and since OutputStream
+                // implements Closeable (and hence, AutoCloseable), outShadow.close() will
+                // be called automatically when exiting this block.  Hence, no explicit
+                // call to outShadow.close() is needed.
                 finish();
             }
         }
     }
 
     private void endBlock() throws IOException {
-        final int blockCRC = this.crc.getValue();
-        this.combinedCRC = this.combinedCRC << 1 | this.combinedCRC >>> 31;
-        this.combinedCRC ^= blockCRC;
+        if (!inBlock) {
+            return;
+        }
+        this.blockCRC = this.crc.getValue();
+        this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >>> 31);
+        this.combinedCRC ^= this.blockCRC;
+        this.inBlock = false;
 
         // empty block at end of file
         if (this.last == -1) {
@@ -539,7 +584,7 @@ public class BZip2CompressorOutputStream
         bsPutUByte(0x59);
 
         /* Now the block's CRC, so it is in a known place. */
-        bsPutInt(blockCRC);
+        bsPutInt(this.blockCRC);
 
         /* Now a single bit indicating no randomisation. */
         bsW(1, 0);
@@ -551,10 +596,17 @@ public class BZip2CompressorOutputStream
     private void endCompression() throws IOException {
         /*
          * Now another magic 48-bit number, 0x177245385090, to indicate the
-         * end of the last block. (sqrt(pi), if you want to know. I did want
+         * end of the last block. (sqrt(pi), if you want to know). I did want
          * to use e, but it contains too much repetition -- 27 18 28 18 28 46
-         * -- for me to feel statistically comfortable. Call me paranoid.)
+         * -- for me to feel statistically comfortable. Call me paranoid.
+         *
+         * NOTE(ssuchter): If we're operating on a FileChannel (e.g. seek-able),
+         * then this routine always seeks back to before where we were.
          */
+        long startingPos = 0;
+        if (outChannel != null) {
+            startingPos = outChannel.position();
+        }
         bsPutUByte(0x17);
         bsPutUByte(0x72);
         bsPutUByte(0x45);
@@ -564,6 +616,9 @@ public class BZip2CompressorOutputStream
 
         bsPutInt(this.combinedCRC);
         bsFinishedWithStream();
+        if (outChannel != null) {
+            outChannel.position(startingPos);
+        }
     }
 
     public void finish() throws IOException {
@@ -588,6 +643,34 @@ public class BZip2CompressorOutputStream
     public void flush() throws IOException {
         final OutputStream outShadow = this.out;
         if (outShadow != null) {
+            if (outChannel != null) {
+                if (inBlock) {
+                    /*
+                     * The above this.inBlock test indicates if any data has
+                     * been written since the last flush or stream creation.
+                     * If not, don't try to do anything at all.
+                     */
+                    if (this.runLength > 0) {
+                        writeRun();
+                    }
+                    endBlock();
+                }
+
+                // Things that we need to reset our state back on:
+                //   - this.bsBuff
+                //   - this.bsLive
+                int oldBsBuff = bsBuff;
+                int oldBsLive = bsLive;
+
+                // Write the end-of-file stuff.
+                endCompression();
+
+                // Indicate that we have nothing in our buffers and reset stuff.
+                runLength = 0;
+                currentChar = -1;
+                bsBuff = oldBsBuff;
+                bsLive = oldBsLive;
+            }
             outShadow.flush();
         }
     }
@@ -725,7 +808,9 @@ public class BZip2CompressorOutputStream
         bsPutUByte('0' + this.blockSize100k);
 
         this.combinedCRC = 0;
-        initBlock();
+        this.inBlock = false;
+        // NOTE(ssuchter): Delay the call to initBlock() until something is actually written:
+        // initBlock();
     }
 
     private void initBlock() {
@@ -738,7 +823,7 @@ public class BZip2CompressorOutputStream
         for (int i = 256; --i >= 0;) {
             inUse[i] = false;
         }
-
+        this.inBlock = true;
     }
 
     private void moveToFrontCodeAndSend() throws IOException {
@@ -968,7 +1053,6 @@ public class BZip2CompressorOutputStream
         }
     }
 
-    @SuppressWarnings("CommentedOutCode")
     private void sendMTFValues3(final int nGroups, final int alphaSize) {
         final int[][] code = this.data.sendMTFValues_code;
         final byte[][] len = this.data.sendMTFValues_len;
@@ -1138,7 +1222,6 @@ public class BZip2CompressorOutputStream
         this.bsLive = bsLiveShadow;
     }
 
-    @SuppressWarnings("CommentedOutCode")
     private void sendMTFValues7() throws IOException {
         final Data dataShadow = this.data;
         final byte[][] len = dataShadow.sendMTFValues_len;
@@ -1220,6 +1303,9 @@ public class BZip2CompressorOutputStream
      * encoding as the first step of the bzip2 algorithm.
      */
     private void write0(int b) throws IOException {
+        if (!this.inBlock) {
+            initBlock();
+        }
         if (this.currentChar != -1) {
             b &= 0xff;
             if (this.currentChar == b) {
@@ -1302,6 +1388,15 @@ public class BZip2CompressorOutputStream
 
             }
         } else {
+            /*
+             * Note that we must be in a block in here. We know
+             * that we're in a block because we only get here because we're
+             * only called in 4 places:
+             * write0 - enforces that we're in a block
+             * self - 3 lines down
+             * finish/flush - only calls us if runLength > 0, which can only
+             *     happen if we're in a block from write0.
+             */
             endBlock();
             initBlock();
             writeRun();
