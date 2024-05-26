@@ -99,6 +99,29 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
     <url>https://issues.apache.org/jira/browse/COMPRESS</url>
   </issueManagement>
 
+  <distributionManagement>
+    <repository>
+      <id>pep01.pepperdata.com</id>
+      <name>pep01.pepperdata.com-releases</name>
+      <url>http://pep01.pepperdata.com:8081/artifactory/libs-release-local</url>
+    </repository>
+    <snapshotRepository>
+      <id>pep01.pepperdata.com</id>
+      <name>pep01.pepperdata.com-snapshots</name>
+      <url>http://pep01.pepperdata.com:8081/artifactory/libs-snapshot-local</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>http://pep01.pepperdata.com:8081/artifactory/repo</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -243,12 +266,6 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
     <defaultGoal>clean artifact:check-buildplan verify apache-rat:check checkstyle:check japicmp:cmp javadoc:javadoc</defaultGoal>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          </configuration>
-        </plugin>
         <!-- Override Javadoc config in parent pom to add JCIP tags -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -357,7 +374,27 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
             </manifestEntries>
           </archive>
         </configuration>
+        <!-- NOTE(ankan): Stop tests jar creation (we don't need it): -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
+      <!-- NOTE(ankan): It is very difficult to stop the creation of the test *sources*
+           jar, because the parent POM has a maven-source-plugin execution defined
+           (with id "create-source-jar") that lists *both* the goals "jar-no-fork" and
+           "test-jar-no-fork" together: you can either kill both or neither!  Since we'd
+           like to have the *sources* jar, we live with the fact that we also get the
+           *test sources* jar.  Note that deleting the test sources jar before the install
+           phase does not work: the install phase expects the test sources jar to exist
+           if it has been generated.
+      -->
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
@@ -412,6 +449,8 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
           <systemPropertyVariables>
             <commons-compress.version>${project.version}</commons-compress.version>
           </systemPropertyVariables>
+          <!-- NOTE(ankan): Stop clutter in build output (especially OSGI stuff): -->
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
       <plugin>
