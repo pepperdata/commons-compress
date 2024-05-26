@@ -139,7 +139,8 @@ public final class BZip2Test extends AbstractTest {
         output.delete();
         final File input = getFile("testCompress209.doc");
         final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos = new BZip2CompressorOutputStream(out.getChannel());
+        final BZip2CompressorOutputStream cos =
+            new BZip2CompressorOutputStream(out.getChannel());
         byte[] in_data = read_fully(input);
 
         cos.write(in_data, 0, 100);
@@ -160,7 +161,8 @@ public final class BZip2Test extends AbstractTest {
         final File output = new File(tempResultDir, "test-ffc.bz2");
         output.delete();
         final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos = new BZip2CompressorOutputStream(out.getChannel());
+        final BZip2CompressorOutputStream cos =
+            new BZip2CompressorOutputStream(out.getChannel());
         byte[] in_data =
             {16, 10, 5, 116, 97, 105, 100, 49, 16, -87, -103, -80, -54, -124, 39, 26, 0};
         cos.printInternalState("pre-write");
@@ -180,7 +182,8 @@ public final class BZip2Test extends AbstractTest {
         final File output = new File(tempResultDir, "test-nfc.bz2");
         output.delete();
         final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos = new BZip2CompressorOutputStream(out.getChannel());
+        final BZip2CompressorOutputStream cos =
+            new BZip2CompressorOutputStream(out.getChannel());
         byte[] in_data =
             {16, 10, 5, 116, 97, 105, 100, 49, 16, -87, -103, -80, -54, -124, 39, 26, 0};
         cos.printInternalState("pre-write");
@@ -196,7 +199,8 @@ public final class BZip2Test extends AbstractTest {
         final File output = new File(tempResultDir, "test-fc.bz2");
         output.delete();
         final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos = new BZip2CompressorOutputStream(out.getChannel());
+        final BZip2CompressorOutputStream cos =
+            new BZip2CompressorOutputStream(out.getChannel());
         byte[] in_data =
             {16, 10, 5, 116, 97, 105, 100, 49, 16, -87, -103, -80, -54, -124, 39, 26, 0};
         cos.printInternalState("pre-write");
