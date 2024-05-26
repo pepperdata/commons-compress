@@ -115,24 +115,6 @@ public final class BZip2Test extends AbstractTest {
         }
     }
 
-    @SuppressWarnings("SimplifiableAssertion")
-    private void assert_bzip2_file_equals(File bz2file, byte[] data) throws IOException {
-        // NOTE(ssuchter): Deliberately do this with bzip2 command line,
-        // to better test for customers.
-        // NOTE(ankan): Our native3 library contains bzip2, so a bzip2 should be always
-        // available (usually at /opt/pepperdata/native3/bin/bzip2).
-        Runtime rt = Runtime.getRuntime();
-        String command = "bzip2 -cd " + bz2file.getAbsolutePath();
-        Process p = rt.exec(command);
-        System.out.printf("Ran %s%n", command);
-        byte[] new_out = read_fully(p.getInputStream());
-        byte[] new_err = read_fully(p.getErrorStream());
-
-        assertTrue(new_err.length == 0, "stdout printed: " + new String(new_err));
-        assertTrue(Arrays.equals(new_out, data),
-            "Arrays not equal:\n" + Arrays.toString(new_out) + "\n" + Arrays.toString(data));
-    }
-
     @Test
     public void testBzipFlush() throws IOException {
         final File output = new File(tempResultDir, "test-flush.bz2");
@@ -237,6 +219,24 @@ public final class BZip2Test extends AbstractTest {
         cos.close();
         cos.printInternalState("post-close");
         assert_bzip2_file_equals(output, new byte[0]);
+    }
+
+    @SuppressWarnings("SimplifiableAssertion")
+    private void assert_bzip2_file_equals(File bz2file, byte[] data) throws IOException {
+        // NOTE(ssuchter): Deliberately do this with bzip2 command line,
+        // to better test for customers.
+        // NOTE(ankan): Our native3 library contains bzip2, so a bzip2 should be always
+        // available (usually at /opt/pepperdata/native3/bin/bzip2).
+        Runtime rt = Runtime.getRuntime();
+        String command = "bzip2 -cd " + bz2file.getAbsolutePath();
+        Process p = rt.exec(command);
+        System.out.printf("Ran %s%n", command);
+        byte[] new_out = read_fully(p.getInputStream());
+        byte[] new_err = read_fully(p.getErrorStream());
+
+        assertTrue(new_err.length == 0, "stdout printed: " + new String(new_err));
+        assertTrue(Arrays.equals(new_out, data),
+            "Arrays not equal:\n" + Arrays.toString(new_out) + "\n" + Arrays.toString(data));
     }
 
     private byte[] read_fully(InputStream in) throws IOException {
