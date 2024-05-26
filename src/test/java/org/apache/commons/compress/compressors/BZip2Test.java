@@ -37,7 +37,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
+
 public final class BZip2Test extends AbstractTest {
 
     @Test
@@ -117,108 +117,112 @@ public final class BZip2Test extends AbstractTest {
 
     @Test
     public void testBzipFlush() throws IOException {
-        final File output = new File(tempResultDir, "test-flush.bz2");
-        output.delete();
+        byte[] in_data;
         final File input = getFile("testCompress209.doc");
-        final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos =
-            new BZip2CompressorOutputStream(out.getChannel());
-        byte[] in_data = read_fully(input);
+        final File output = new File(tempResultDir, "test-flush.bz2");
+        try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
+            try (BZip2CompressorOutputStream cos =
+                     new BZip2CompressorOutputStream(out.getChannel())) {
+                in_data = read_fully(input);
 
-        cos.write(in_data, 0, 100);
-        cos.flush();
-        assert_bzip2_file_equals(output, Arrays.copyOfRange(in_data, 0, 100));
+                cos.write(in_data, 0, 100);
+                cos.flush();
+                assert_bzip2_file_equals(output, Arrays.copyOfRange(in_data, 0, 100));
 
-        cos.write(in_data, 100, 100);
-        cos.flush();
-        assert_bzip2_file_equals(output, Arrays.copyOfRange(in_data, 0, 200));
+                cos.write(in_data, 100, 100);
+                cos.flush();
+                assert_bzip2_file_equals(output, Arrays.copyOfRange(in_data, 0, 200));
 
-        cos.write(in_data, 200, in_data.length - 200);
-        cos.close(); //Note close, not flush
+                cos.write(in_data, 200, in_data.length - 200);
+            }
+        }
         assert_bzip2_file_equals(output, in_data);
     }
 
     @Test
     public void testBzipFlushFlushClose() throws IOException {
-        final File output = new File(tempResultDir, "test-ffc.bz2");
-        output.delete();
-        final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos =
-            new BZip2CompressorOutputStream(out.getChannel());
         byte[] in_data =
             {16, 10, 5, 116, 97, 105, 100, 49, 16, -87, -103, -80, -54, -124, 39, 26, 0};
-        cos.printInternalState("pre-write");
-        cos.write(in_data, 0, 17);
-        cos.printInternalState("post-write");
-        cos.flush();
-        cos.printInternalState("post-flush1");
-        cos.flush();
-        cos.printInternalState("post-flush2");
-        cos.close();
-        cos.printInternalState("post-close");
+        final File output = new File(tempResultDir, "test-ffc.bz2");
+        try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
+            final BZip2CompressorOutputStream cos =
+                new BZip2CompressorOutputStream(out.getChannel());
+            cos.printInternalState("pre-write");
+            cos.write(in_data, 0, 17);
+            cos.printInternalState("post-write");
+            cos.flush();
+            cos.printInternalState("post-flush1");
+            cos.flush();
+            cos.printInternalState("post-flush2");
+            cos.close();
+            cos.printInternalState("post-close");
+        }
         assert_bzip2_file_equals(output, in_data);
     }
 
     @Test
     public void testBzipNoFlushClose() throws IOException {
-        final File output = new File(tempResultDir, "test-nfc.bz2");
-        output.delete();
-        final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos =
-            new BZip2CompressorOutputStream(out.getChannel());
         byte[] in_data =
             {16, 10, 5, 116, 97, 105, 100, 49, 16, -87, -103, -80, -54, -124, 39, 26, 0};
-        cos.printInternalState("pre-write");
-        cos.write(in_data, 0, 17);
-        cos.printInternalState("post-write");
-        cos.close();
-        cos.printInternalState("post-close");
+        final File output = new File(tempResultDir, "test-nfc.bz2");
+        try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
+            final BZip2CompressorOutputStream cos =
+                new BZip2CompressorOutputStream(out.getChannel());
+            cos.printInternalState("pre-write");
+            cos.write(in_data, 0, 17);
+            cos.printInternalState("post-write");
+            cos.close();
+            cos.printInternalState("post-close");
+        }
         assert_bzip2_file_equals(output, in_data);
     }
 
     @Test
     public void testBzipFlushClose() throws IOException {
-        final File output = new File(tempResultDir, "test-fc.bz2");
-        output.delete();
-        final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos =
-            new BZip2CompressorOutputStream(out.getChannel());
         byte[] in_data =
             {16, 10, 5, 116, 97, 105, 100, 49, 16, -87, -103, -80, -54, -124, 39, 26, 0};
-        cos.printInternalState("pre-write");
-        cos.write(in_data, 0, 17);
-        cos.printInternalState("post-write");
-        cos.flush();
-        cos.printInternalState("post-flush");
-        cos.close();
-        cos.printInternalState("post-close");
+        final File output = new File(tempResultDir, "test-fc.bz2");
+        try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
+            final BZip2CompressorOutputStream cos =
+                new BZip2CompressorOutputStream(out.getChannel());
+            cos.printInternalState("pre-write");
+            cos.write(in_data, 0, 17);
+            cos.printInternalState("post-write");
+            cos.flush();
+            cos.printInternalState("post-flush");
+            cos.close();
+            cos.printInternalState("post-close");
+        }
         assert_bzip2_file_equals(output, in_data);
     }
 
     @Test
     public void testBzipNoWrite() throws IOException {
         final File output = new File(tempResultDir, "test-nw.bz2");
-        output.delete();
-        final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos =
-            new BZip2CompressorOutputStream(out.getChannel());
-        cos.close();
-        cos.printInternalState("post-close");
+        try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
+            final BZip2CompressorOutputStream cos =
+                new BZip2CompressorOutputStream(out.getChannel());
+            cos.printInternalState("pre-close");
+            cos.close();
+            cos.printInternalState("post-close");
+        }
         assert_bzip2_file_equals(output, new byte[0]);
     }
 
     @Test
     public void testBzipNoWriteFlush() throws IOException {
         final File output = new File(tempResultDir, "test-nwf.bz2");
-        output.delete();
-        final RandomAccessFile out = new RandomAccessFile(output, "rw");
-        final BZip2CompressorOutputStream cos =
-            new BZip2CompressorOutputStream(out.getChannel());
-        cos.flush();
-        assert_bzip2_file_equals(output, new byte[0]);
-        cos.close();
-        cos.printInternalState("post-close");
-        assert_bzip2_file_equals(output, new byte[0]);
+        try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
+            final BZip2CompressorOutputStream cos =
+                new BZip2CompressorOutputStream(out.getChannel());
+            cos.printInternalState("pre-flush");
+            cos.flush();
+            cos.printInternalState("post-flush");
+            assert_bzip2_file_equals(output, new byte[0]);
+            cos.close();
+            cos.printInternalState("post-close");
+            assert_bzip2_file_equals(output, new byte[0]);
+        }
     }
 
     @SuppressWarnings("SimplifiableAssertion")
