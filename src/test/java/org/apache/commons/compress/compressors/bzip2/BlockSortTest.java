@@ -38,34 +38,54 @@ public class BlockSortTest {
     /*
      * Burrows-Wheeler transform of fixture the manual way:
      *
-     * build the matrix
+     * build the matrix:
      *
-     * 0, 1, 252, 253, 255, 254, 3, 2, 128 1, 252, 253, 255, 254, 3, 2, 128, 0 252, 253, 255, 254, 3, 2, 128, 0, 1 253, 255, 254, 3, 2, 128, 0, 1, 252 255, 254,
-     * 3, 2, 128, 0, 1, 252, 253 254, 3, 2, 128, 0, 1, 252, 253, 255 3, 2, 128, 0, 1, 252, 253, 255, 254 2, 128, 0, 1, 252, 253, 255, 254, 3 128, 0, 1, 252,
-     * 253, 255, 254, 3, 2
+     *     0, 1, 252, 253, 255, 254, 3, 2, 128
+     *     1, 252, 253, 255, 254, 3, 2, 128, 0
+     *     252, 253, 255, 254, 3, 2, 128, 0, 1
+     *     253, 255, 254, 3, 2, 128, 0, 1, 252
+     *     255, 254, 3, 2, 128, 0, 1, 252, 253
+     *     254, 3, 2, 128, 0, 1, 252, 253, 255
+     *     3, 2, 128, 0, 1, 252, 253, 255, 254
+     *     2, 128, 0, 1, 252, 253, 255, 254, 3
+     *     128, 0, 1, 252, 253, 255, 254, 3, 2
      *
-     * sort it
+     * sort it:
      *
-     * 0, 1, 252, 253, 255, 254, 3, 2, 128 1, 252, 253, 255, 254, 3, 2, 128, 0 2, 128, 0, 1, 252, 253, 255, 254, 3 3, 2, 128, 0, 1, 252, 253, 255, 254 128, 0,
-     * 1, 252, 253, 255, 254, 3, 2 252, 253, 255, 254, 3, 2, 128, 0, 1 253, 255, 254, 3, 2, 128, 0, 1, 252 254, 3, 2, 128, 0, 1, 252, 253, 255 255, 254, 3, 2,
-     * 128, 0, 1, 252, 253
+     *     0, 1, 252, 253, 255, 254, 3, 2, 128
+     *     1, 252, 253, 255, 254, 3, 2, 128, 0
+     *     2, 128, 0, 1, 252, 253, 255, 254, 3
+     *     3, 2, 128, 0, 1, 252, 253, 255, 254
+     *     128, 0, 1, 252, 253, 255, 254, 3, 2
+     *     252, 253, 255, 254, 3, 2, 128, 0, 1
+     *     253, 255, 254, 3, 2, 128, 0, 1, 252
+     *     254, 3, 2, 128, 0, 1, 252, 253, 255
+     *     255, 254, 3, 2, 128, 0, 1, 252, 253
      *
-     * grab last column
+     * grab last column:
      *
-     * 128, 0, 3, 254, 2, 1, 252, 255, 253
+     *     128, 0, 3, 254, 2, 1, 252, 255, 253
      *
      * and the original line has been 0
+     *
+     * NOTE(ankan): If you collapse the matrix layouts in the examples above, and try to
+     * pack the numbers in a few lines (for whatever misguided reason), you are losing
+     * the entire point of having the example!!
      */
 
-    private static final byte[] FIXTURE = { 0, 1, (byte) 252, (byte) 253, (byte) 255, (byte) 254, 3, 2, (byte) 128 };
+    private static final byte[] FIXTURE = {  0, 1, (byte) 252, (byte) 253, (byte) 255,
+                                             (byte) 254, 3, 2, (byte) 128 };
 
-    private static final byte[] FIXTURE_BWT = { (byte) 128, 0, 3, (byte) 254, 2, 1, (byte) 252, (byte) 255, (byte) 253 };
+    private static final byte[] FIXTURE_BWT = { (byte) 128, 0, 3, (byte) 254, 2, 1,
+                                                (byte) 252, (byte) 255, (byte) 253 };
 
     private static final int[] FIXTURE_SORTED = { 0, 1, 7, 6, 8, 2, 3, 5, 4 };
 
-    private static final byte[] FIXTURE2 = { 'C', 'o', 'm', 'm', 'o', 'n', 's', ' ', 'C', 'o', 'm', 'p', 'r', 'e', 's', 's', };
+    private static final byte[] FIXTURE2 = {
+        'C', 'o', 'm', 'm', 'o', 'n', 's', ' ', 'C', 'o', 'm', 'p', 'r', 'e', 's', 's', };
 
-    private static final byte[] FIXTURE2_BWT = { 's', 's', ' ', 'r', 'o', 'm', 'o', 'o', 'C', 'C', 'm', 'm', 'p', 'n', 's', 'e', };
+    private static final byte[] FIXTURE2_BWT = {
+        's', 's', ' ', 'r', 'o', 'm', 'o', 'o', 'C', 'C', 'm', 'm', 'p', 'n', 's', 'e', };
 
     private void assertFixture2Sorted(final BZip2CompressorOutputStream.Data data) {
         assertFixtureSorted(data, FIXTURE2, FIXTURE2_BWT);
@@ -75,7 +95,8 @@ public class BlockSortTest {
         assertFixtureSorted(data, FIXTURE, FIXTURE_BWT);
     }
 
-    private void assertFixtureSorted(final BZip2CompressorOutputStream.Data data, final byte[] fixture, final byte[] fixtureBwt) {
+    private void assertFixtureSorted(final BZip2CompressorOutputStream.Data data,
+                                     final byte[] fixture, final byte[] fixtureBwt) {
         assertEquals(fixture[fixture.length - 1], data.block[0]);
         for (int i = 0; i < fixture.length; i++) {
             assertEquals(fixtureBwt[i], data.block[data.fmap[i]]);
