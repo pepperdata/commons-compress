@@ -99,28 +99,46 @@ Brotli, Zstandard and ar, cpio, jar, tar, zip, dump, 7z, arj.
     <url>https://issues.apache.org/jira/browse/COMPRESS</url>
   </issueManagement>
 
-  <distributionManagement>
-    <repository>
-      <id>pep01.pepperdata.com</id>
-      <name>pep01.pepperdata.com-releases</name>
-      <url>http://pep01.pepperdata.com:8081/artifactory/libs-release-local</url>
-    </repository>
-    <snapshotRepository>
-      <id>pep01.pepperdata.com</id>
-      <name>pep01.pepperdata.com-snapshots</name>
-      <url>http://pep01.pepperdata.com:8081/artifactory/libs-snapshot-local</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <repositories>
     <repository>
       <id>central</id>
-      <url>http://pep01.pepperdata.com:8081/artifactory/repo</url>
+      <name>Maven Central</name>
+      <url>https://repo1.maven.org/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
     </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>central</id>
+      <name>Maven Central</name>
+      <url>https://repo1.maven.org/maven2</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <distributionManagement>
+    <repository>
+      <id>pepperdata-pd-artifactory</id>
+      <name>PD CodeArtifact Proxy</name>
+      <url>http://codeartifact.dev.pepperdata.com:8888/pd-artifactory/</url>
+    </repository>
+    <snapshotRepository>
+      <id>pepperdata-pd-artifactory-snapshot</id>
+      <name>PD CodeArtifact Snapshot Proxy</name>
+      <url>http://codeartifact.dev.pepperdata.com:8888/pd-artifactory-snapshot/</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <dependencies>
     <dependency>
